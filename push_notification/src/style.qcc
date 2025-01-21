@@ -1,0 +1,23 @@
+QMainWindow{
+	background-color : #313131; 
+	color: #ffffff
+}
+QDialog{
+	background-color: #313131;
+	color: #ffffff;
+}
+
+QButton{
+	background-color: #616161;
+	color: #ffffff;
+}
+QLineEdit{
+	background-color: #616161;
+	color: #ffffff;
+	font-size: 12px;
+}
+QLabel{
+	background-color: #414141;
+	color: #ffffff;
+}
+
