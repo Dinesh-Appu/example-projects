@@ -21,3 +21,11 @@ QLabel{
 	color: #ffffff;
 }
 
+QLabel#name{
+	background-color: #414141;
+	color: #ffffff;
+	font-size: 14px;
+	font-family: firecode;
+	
+}
+

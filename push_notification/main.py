@@ -1,5 +1,6 @@
 # Additional Packages
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QLabel, QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout
+from PyQt5.QtCore import Qt
 
 # system Packages
 import sys
@@ -10,6 +11,17 @@ import json
 from Server.package.OpenNotify import Client, MessageModel
 
 # Start Time -> 21-01.2025 6.00 PM :: 9.54 PM
+# Start Time -> 22-01.2025 1.30 PM :: 2.50 PM
+
+
+class Message(MessageModel):
+
+	id:str
+	to_id:str 
+	body:str 
+	icon:str
+
+
 
 class MainWindow(QMainWindow):
 
@@ -18,9 +30,10 @@ class MainWindow(QMainWindow):
 		# Constant Variabels
 		self.WIDTH = 500
 		self.HEIGHT = 500
-		self.Name:str
+		self.NAME:str
 		self.ID:str 
 		self.TOKEN:str 
+		self.TO:str = ""
 		self.APPNAME:str
 		self.APPID:str 
 		self.IP:str = '127.0.0.1'
@@ -40,7 +53,8 @@ class MainWindow(QMainWindow):
 		self.login = Login(self)
 
 		  # labels	
-		self.message_labels = QLabel()
+		self.message_label = QLabel()
+		self.name_label = QLabel()
 
 		  # line edit
 		self.user_edit = QLineEdit()
@@ -71,17 +85,28 @@ class MainWindow(QMainWindow):
 
 		self.message_edit.setMaximumHeight(30)
 		self.send_btn.setMaximumHeight(30)
+		self.name_label.setMinimumWidth(180)
+
+		self.name_label.setAlignment(Qt.AlignCenter)
+		self.message_label.setAlignment(Qt.AlignTop)
+
+		self.name_label.setText(self.ID)
+		self.user_edit.setText(self.TO)
+
+		self.name_label.setObjectName('name')
 
 		# signal
 		self.send_btn.clicked.connect(self.send_msg)
+		self.message_edit.returnPressed.connect(self.send_msg)
 
+		self.top_layout.addWidget(self.name_label)
 		self.top_layout.addWidget(self.user_edit)
 
 		self.bottom_layout.addWidget(self.message_edit)
 		self.bottom_layout.addWidget(self.send_btn)
 
 		self.main_layout.addLayout(self.top_layout)
-		self.main_layout.addWidget(self.message_labels)
+		self.main_layout.addWidget(self.message_label)
 		self.main_layout.addLayout(self.bottom_layout)
 
 		centran_widget.setLayout(self.main_layout)
@@ -92,7 +117,7 @@ class MainWindow(QMainWindow):
 		try:
 			with open(self.DATAFILE, 'r') as file:
 				data = json.load(file)
-				self.Name = data['name']
+				self.NAME = data['name']
 				self.ID = data['id']
 				self.TOKEN = data['token']
 				self.APPNAME= data['app_name']
@@ -112,10 +137,18 @@ class MainWindow(QMainWindow):
 
 			self.load_data()
 
+	def load_message(self, message:Message) -> None:
+		oldText = self.message_label.text()
+		text = f"\n {message.id} -> {message.body}"
+		self.message_label.setText(oldText+text)
 
 	def send_msg(self) -> None:
 		self.TO = self.user_edit.text()
 		message = Message()
+
+		if self.TO == "":
+			print("To id None")
+			return
 
 		message.id = self.ID
 		message.to_id = self.TO
@@ -125,13 +158,26 @@ class MainWindow(QMainWindow):
 		self.client.sendMessage(message)
 
 
+		oldText = self.message_label.text()
+		text = f"\n {self.ID} -> {self.message_edit.text()}"
+		self.message_label.setText(oldText+text)
+
+		self.message_edit.setText("")
+
+
 	def startup(self) -> None:
 
 		self.client.setAppId(self.APPID)
 		self.client.setAppName(self.APPNAME)
 		self.client.setId(self.ID)
 		self.client.setModel(Message)
-		self.client.start()
+		self.client.receiver.connect(self.load_message)
+		
+		try:
+			self.client.start()
+		except ConnectionRefusedError as e:
+			print(e)
+			sys.exit()
 
 
 
@@ -191,14 +237,6 @@ class Login(QDialog):
 		self.close()
 		return True
 
-
-
-class Message(MessageModel):
-
-	id:str
-	to_id:str 
-	body:str 
-	icon:str
 
 
 

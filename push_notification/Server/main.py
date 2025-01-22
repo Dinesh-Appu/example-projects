@@ -19,6 +19,6 @@ port = 200
 server = Server(ip, port)
 
 server.setModel(Message)
-server.generateID('PushNoti')
+#server.generateID('PushNoti')
 server.start()
 
